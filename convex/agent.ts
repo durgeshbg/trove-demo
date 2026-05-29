@@ -4,7 +4,7 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { api, internal } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
-import { Doc } from "./_generated/dataModel";
+import { type Doc } from "./_generated/dataModel";
 
 // Initialize Google GenAI client
 const ai = new GoogleGenAI({ apiKey: process.env.AI_API_KEY });

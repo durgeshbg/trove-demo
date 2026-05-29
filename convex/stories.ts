@@ -2,7 +2,7 @@ import { mutation, query, action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
-import { Id } from "./_generated/dataModel";
+import { type Id } from "./_generated/dataModel";
 
 const ai = new GoogleGenAI({ apiKey: process.env.AI_API_KEY });
 
@@ -46,7 +46,10 @@ export const generateStory = action({
     mood: v.optional(v.string()),
     maxTurns: v.optional(v.number()),
   },
-  handler: async (ctx, args): Promise<{
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
     storyId: Id<"stories">;
     title: string;
     context: string;
@@ -99,14 +102,17 @@ Return JSON:
         prompt: string;
       };
 
-      const storyId: Id<"stories"> = await ctx.runMutation(api.stories._insert, {
-        title: result.title,
-        vibe,
-        mood,
-        context: result.context,
-        prompt: result.prompt,
-        maxTurns,
-      });
+      const storyId: Id<"stories"> = await ctx.runMutation(
+        api.stories._insert,
+        {
+          title: result.title,
+          vibe,
+          mood,
+          context: result.context,
+          prompt: result.prompt,
+          maxTurns,
+        },
+      );
 
       return { storyId, ...result };
     } catch (err) {
