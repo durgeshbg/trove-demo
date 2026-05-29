@@ -7,16 +7,22 @@ import { MessageBubble } from "./MessageBubble";
 import { OptionButtons } from "./OptionButtons";
 import { TypingIndicator } from "./TypingIndicator";
 import { AmbientBackground } from "./AmbientBackground";
-import { Send, Sparkles, ChevronRight } from "lucide-react";
+import { Send, Sparkles, ChevronRight, Home, ListRestart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatProps {
   sessionId: Id<"sessions">;
   className?: string;
   onComplete?: () => void;
+  handleRestart?: () => void;
 }
 
-export function Chat({ sessionId, className, onComplete }: ChatProps) {
+export function Chat({
+  sessionId,
+  className,
+  onComplete,
+  handleRestart,
+}: ChatProps) {
   const session = useQuery(api.sessions.getById, { id: sessionId });
   const story = useQuery(
     api.stories.getById,
@@ -151,16 +157,16 @@ export function Chat({ sessionId, className, onComplete }: ChatProps) {
   return (
     <>
       <AmbientBackground />
-      
+
       <div className={`relative z-10 flex flex-col h-full ${className ?? ""}`}>
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="shrink-0 px-4 py-4 border-b border-border/50 bg-bg-secondary/80 backdrop-blur-md flex items-center gap-3"
         >
-          <motion.div 
+          <motion.div
             className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center border border-accent/30"
             whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ duration: 0.2 }}
@@ -177,6 +183,14 @@ export function Chat({ sessionId, className, onComplete }: ChatProps) {
               {story.vibe} · {story.mood}
             </p>
           </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleRestart}
+            className="w-10 h-10 rounded-xl bg-bg-tertiary/80 border border-border hover:bg-bg-elevated transition-colors flex items-center justify-center"
+          >
+            <ListRestart className="w-4 h-4 text-text-muted" />
+          </motion.button>
         </motion.div>
 
         {/* Messages */}
@@ -200,7 +214,7 @@ export function Chat({ sessionId, className, onComplete }: ChatProps) {
         {/* Input Area */}
         <AnimatePresence>
           {session.status === "active" && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
@@ -273,9 +287,9 @@ export function Chat({ sessionId, className, onComplete }: ChatProps) {
               {/* Decorative background elements */}
               <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-accent/10 to-transparent" />
               <motion.div
-                animate={{ 
+                animate={{
                   scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.5, 0.3]
+                  opacity: [0.3, 0.5, 0.3],
                 }}
                 transition={{ duration: 3, repeat: Infinity }}
                 className="absolute top-10 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-accent/20 blur-3xl"
@@ -307,7 +321,8 @@ export function Chat({ sessionId, className, onComplete }: ChatProps) {
                   transition={{ delay: 0.4 }}
                   className="text-text-secondary text-[15px] leading-relaxed mb-8"
                 >
-                  You've reached the end of your journey. Your character profile is ready to be revealed.
+                  You've reached the end of your journey. Your character profile
+                  is ready to be revealed.
                 </motion.p>
 
                 <motion.div

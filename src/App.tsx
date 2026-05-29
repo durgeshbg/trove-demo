@@ -21,10 +21,10 @@ function App() {
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-primary">
-        <motion.div 
+        <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full" 
+          className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full"
         />
       </div>
     );
@@ -34,14 +34,12 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-primary px-4">
         <div className="w-full max-w-sm">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <h1 className="text-4xl font-bold text-text-primary mb-3">
-              Trove
-            </h1>
+            <h1 className="text-4xl font-bold text-text-primary mb-3">Trove</h1>
             <p className="text-text-secondary">
               Discover your character through immersive stories
             </p>
@@ -111,13 +109,13 @@ function TroveApp() {
   return (
     <div className="h-screen flex flex-col bg-bg-primary overflow-hidden">
       {/* Top bar */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="shrink-0 h-16 border-b border-border/50 bg-bg-secondary/80 backdrop-blur-md flex items-center justify-between px-4 z-20"
       >
         <div className="flex items-center gap-3">
-          <motion.span 
+          <motion.span
             className="text-[20px] font-bold text-accent tracking-tight"
             whileHover={{ scale: 1.05 }}
           >
@@ -133,7 +131,9 @@ function TroveApp() {
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-tertiary border border-border hover:bg-bg-elevated hover:border-accent/40 transition-all"
             >
               <ScrollText className="w-4 h-4 text-accent" />
-              <span className="text-sm text-text-secondary hidden sm:inline">Profile</span>
+              <span className="text-sm text-text-secondary hidden sm:inline">
+                Profile
+              </span>
             </motion.button>
           )}
           <UserButton
@@ -169,10 +169,11 @@ function TroveApp() {
               transition={{ duration: 0.3 }}
               className="h-full"
             >
-              <Chat 
-                sessionId={sessionId} 
+              <Chat
+                sessionId={sessionId}
                 className="h-full"
                 onComplete={handleComplete}
+                handleRestart={handleRestart}
               />
             </motion.div>
           )}
@@ -193,3 +194,4 @@ function TroveApp() {
 }
 
 export default App;
+
