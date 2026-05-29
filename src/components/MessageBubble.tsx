@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
+import { Sparkles } from "lucide-react";
 
 interface MessageBubbleProps {
   text: string;
@@ -9,6 +10,9 @@ interface MessageBubbleProps {
 
 export function MessageBubble({ text, role, index }: MessageBubbleProps) {
   const isUser = role === "user";
+
+  // Check if this is an ending message with profile summary
+  const isEndingWithProfile = text.includes("Your Character Profile");
 
   // Split text into words for staggered animation
   const words = text.split(" ");
@@ -123,15 +127,21 @@ export function MessageBubble({ text, role, index }: MessageBubbleProps) {
             animate="visible"
             className="relative z-10"
           >
-            {words.map((word, wordIndex) => (
-              <motion.span
-                key={wordIndex}
-                variants={wordVariants}
-                className="inline-block mr-[0.3em]"
-              >
-                {word}
-              </motion.span>
-            ))}
+            {isEndingWithProfile ? (
+              // Render ending message with profile summary
+              <EndingMessageContent text={text} wordVariants={wordVariants} />
+            ) : (
+              // Regular word-by-word animation for normal messages
+              words.map((word, wordIndex) => (
+                <motion.span
+                  key={wordIndex}
+                  variants={wordVariants}
+                  className="inline-block mr-[0.3em]"
+                >
+                  {word}
+                </motion.span>
+              ))
+            )}
           </motion.span>
 
           {/* Subtle shine effect on hover */}
@@ -164,5 +174,87 @@ export function MessageBubble({ text, role, index }: MessageBubbleProps) {
         )}
       </motion.div>
     </motion.div>
+  );
+}
+
+// Helper component to render ending message with profile summary
+interface EndingMessageContentProps {
+  text: string;
+  wordVariants: {
+    hidden: { opacity: number; y: number };
+    visible: {
+      opacity: number;
+      y: number;
+      transition: { duration: number; ease: string };
+    };
+  };
+}
+
+function EndingMessageContent({ text, wordVariants }: EndingMessageContentProps) {
+  // Split the message into narrative and profile parts
+  const parts = text.split("---");
+  const narrativeText = parts[0]?.trim() || "";
+  const profileText = parts[1]?.trim() || "";
+
+  // Parse bold text (**text**)
+  const parseBoldText = (text: string) => {
+    const segments = text.split(/(\*\*.*?\*\*)/g);
+    return segments.map((segment, i) => {
+      if (segment.startsWith("**") && segment.endsWith("**")) {
+        return (
+          <strong key={i} className="text-accent font-semibold">
+            {segment.slice(2, -2)}
+          </strong>
+        );
+      }
+      return segment;
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Narrative part */}
+      <div>
+        {narrativeText.split(" ").map((word, wordIndex) => (
+          <motion.span
+            key={wordIndex}
+            variants={wordVariants}
+            className="inline-block mr-[0.3em]"
+          >
+            {parseBoldText(word)}
+          </motion.span>
+        ))}
+      </div>
+
+      {/* Profile summary part */}
+      {profileText && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.4 }}
+          className="pt-4 border-t border-border/50"
+        >
+          {/* Profile header */}
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-accent" />
+            <span className="text-accent font-semibold text-[14px]">
+              Your Character Profile
+            </span>
+          </div>
+
+          {/* Profile content */}
+          <div className="text-[14px] text-text-secondary leading-relaxed space-y-3">
+            {profileText
+              .replace("Your Character Profile", "")
+              .trim()
+              .split("\n\n")
+              .filter(Boolean)
+              .map((paragraph, i) => (
+                <p key={i}>{parseBoldText(paragraph)}</p>
+              ))}
+          </div>
+        </motion.div>
+      )}
+    </div>
   );
 }

@@ -10,6 +10,7 @@
 
 import type * as agent from "../agent.js";
 import type * as decisions from "../decisions.js";
+import type * as lib_traits from "../lib/traits.js";
 import type * as sessions from "../sessions.js";
 import type * as stories from "../stories.js";
 import type * as traitCategories from "../traitCategories.js";
@@ -23,6 +24,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   agent: typeof agent;
   decisions: typeof decisions;
+  "lib/traits": typeof lib_traits;
   sessions: typeof sessions;
   stories: typeof stories;
   traitCategories: typeof traitCategories;

@@ -6,6 +6,7 @@ import { api, internal } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
 import { type Doc } from "./_generated/dataModel";
 import { traitDescriptions } from "./traitCategories";
+import { computeTraitSummary } from "./lib/traits";
 
 // Initialize Google GenAI client
 const ai = new GoogleGenAI({ apiKey: process.env.AI_API_KEY });
@@ -243,14 +244,16 @@ Return JSON:
     let newScenario: string | undefined = result.message;
     let newOptions: string[] | undefined = result.options;
 
-    // If ending, add ending message and mark complete
+    // If ending, add ending message with trait summary and mark complete
     if (isLastTurn || result.isEnding) {
+      const traitSummary = computeTraitSummary(updatedTraits);
       const endingMsg =
         result.endingMessage ||
         `Your journey through ${story.title} has reached its conclusion. Your ${primaryTrait} has been revealed.`;
+      const fullEndingMessage = `${endingMsg}\n\n---\n\n**Your Character Profile**\n\n${traitSummary}`;
       newMessages.push({
         role: "narrator" as const,
-        text: endingMsg,
+        text: fullEndingMessage,
         timestamp: Date.now(),
       });
       newStatus = "completed";
