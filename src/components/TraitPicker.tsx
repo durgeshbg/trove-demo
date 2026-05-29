@@ -41,12 +41,12 @@ const categoryGradients: Record<string, string> = {
 };
 
 const categoryAccentColors: Record<string, string> = {
-  "social-skills": "text-rose-400",
-  "decision-making": "text-amber-400",
-  "creative-problem-solving": "text-cyan-400",
-  "leadership": "text-emerald-400",
-  "personal-integrity": "text-violet-400",
-  "adaptability": "text-sky-400",
+  "social-skills": "text-accent",
+  "decision-making": "text-accent",
+  "creative-problem-solving": "text-accent",
+  "leadership": "text-accent",
+  "personal-integrity": "text-accent",
+  "adaptability": "text-accent",
 };
 
 type Step = "categories" | "traits" | "generating";
@@ -107,18 +107,18 @@ export function TraitPicker({ onStart }: TraitPickerProps) {
   const availableTraits = category?.primaryTraits || [];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+    <div className="h-full flex flex-col items-center justify-center px-4 py-8 overflow-y-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-center mb-10"
+        className="text-center mb-6"
       >
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 mb-6">
-          <Brain className="w-8 h-8 text-accent" />
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 mb-4">
+          <Brain className="w-6 h-6 text-accent" />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-semibold text-text-primary mb-3 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-text-primary mb-2 tracking-tight">
           Trove
         </h1>
         <p className="text-text-secondary text-base max-w-md mx-auto leading-relaxed">
@@ -142,46 +142,51 @@ export function TraitPicker({ onStart }: TraitPickerProps) {
             transition={{ duration: 0.3 }}
             className="w-full max-w-3xl"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {traitCategories.map((cat, index) => (
                 <motion.button
                   key={cat.id}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: index * 0.08 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
                   onClick={() => handleCategorySelect(cat.id)}
-                  className={`group relative overflow-hidden bg-bg-secondary border border-border rounded-2xl p-6 hover:border-accent/40 transition-all duration-300 text-left`}
+                  className={`group relative overflow-hidden bg-bg-secondary border border-border rounded-xl p-4 hover:border-accent/40 transition-all duration-300 text-left`}
                 >
                   {/* Background gradient on hover */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${categoryGradients[cat.id]} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                   
                   <div className="relative z-10">
-                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-bg-elevated mb-4 group-hover:scale-110 transition-transform duration-300 ${categoryAccentColors[cat.id]}`}>
+                    <div className={`inline-flex items-center justify-center w-10 h-10 rounded-lg bg-bg-elevated mb-3 group-hover:scale-110 transition-transform duration-300 ${categoryAccentColors[cat.id]}`}>
                       {categoryIcons[cat.id]}
                     </div>
                     
-                    <h3 className="font-semibold text-text-primary text-lg mb-2 group-hover:text-accent transition-colors">
+                    <h3 className="font-semibold text-text-primary text-base mb-1.5 group-hover:text-accent transition-colors">
                       {cat.name}
                     </h3>
                     
-                    <p className="text-text-secondary text-sm leading-relaxed mb-3">
+                    <p className="text-text-secondary text-xs leading-relaxed mb-2 line-clamp-2">
                       {cat.description}
                     </p>
                     
-                    <div className="flex flex-wrap gap-2">
-                      {cat.primaryTraits.map(trait => (
+                    <div className="flex flex-wrap gap-1">
+                      {cat.primaryTraits.slice(0, 2).map(trait => (
                         <span 
                           key={trait}
-                          className="text-[11px] px-2 py-1 rounded-full bg-bg-elevated text-text-muted"
+                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-bg-elevated text-text-muted"
                         >
                           {traitLabels[trait]}
                         </span>
                       ))}
+                      {cat.primaryTraits.length > 2 && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-bg-elevated text-text-muted">
+                          +{cat.primaryTraits.length - 2}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ArrowRight className="w-5 h-5 text-accent" />
+                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ArrowRight className="w-4 h-4 text-accent" />
                   </div>
                 </motion.button>
               ))}
@@ -192,17 +197,17 @@ export function TraitPicker({ onStart }: TraitPickerProps) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="mt-12 text-center"
+                transition={{ delay: 0.4 }}
+                className="mt-8 text-center"
               >
-                <p className="text-text-muted text-sm mb-3">
+                <p className="text-text-muted text-xs mb-2">
                   Your previous adventures
                 </p>
-                <div className="flex flex-wrap justify-center gap-2">
+                <div className="flex flex-wrap justify-center gap-1.5">
                   {storyHistory.slice(0, 5).map((story) => (
                     <span
                       key={story._id}
-                      className="text-xs px-3 py-1.5 rounded-full bg-bg-secondary border border-border text-text-secondary"
+                      className="text-[10px] px-2.5 py-1 rounded-full bg-bg-secondary border border-border text-text-secondary"
                     >
                       {story.title}
                     </span>
@@ -238,16 +243,16 @@ export function TraitPicker({ onStart }: TraitPickerProps) {
               </span>
             </div>
 
-            <h2 className="text-2xl font-semibold text-text-primary mb-2">
+            <h2 className="text-xl font-semibold text-text-primary mb-2">
               Choose your primary trait
             </h2>
-            <p className="text-text-secondary mb-8">
+            <p className="text-text-secondary text-sm mb-6">
               This will be the main focus of your personalized story.
             </p>
 
             {/* Secondary trait selector (optional) */}
-            <div className="mb-8">
-              <p className="text-sm text-text-muted mb-3">
+            <div className="mb-6">
+              <p className="text-xs text-text-muted mb-2">
                 Optional: Add a secondary trait for a more nuanced experience
               </p>
               <div className="flex flex-wrap gap-2">
@@ -280,28 +285,25 @@ export function TraitPicker({ onStart }: TraitPickerProps) {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {availableTraits.map((trait, index) => (
                 <motion.button
                   key={trait}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  transition={{ duration: 0.25, delay: index * 0.08 }}
                   onClick={() => handleTraitSelect(trait)}
-                  className="w-full group relative bg-bg-secondary border border-border rounded-xl p-5 hover:border-accent/40 hover:bg-bg-tertiary transition-all duration-200 text-left"
+                  className="w-full group relative bg-bg-secondary border border-border rounded-lg p-4 hover:border-accent/40 hover:bg-bg-tertiary transition-all duration-200 text-left"
                 >
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center justify-between gap-3">
                     <div className="flex-1">
-                      <h3 className="font-medium text-text-primary text-lg mb-1 group-hover:text-accent transition-colors">
+                      <h3 className="font-medium text-text-primary text-base group-hover:text-accent transition-colors">
                         {traitLabels[trait]}
                       </h3>
-                      <p className="text-text-secondary text-sm">
-                        Test your {trait.replace("_", " ")} through challenging scenarios
-                      </p>
                     </div>
                     <div className="shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-bg-elevated flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-                        <ArrowRight className="w-5 h-5 text-text-muted group-hover:text-accent transition-colors" />
+                      <div className="w-8 h-8 rounded-full bg-bg-elevated flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                        <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-accent transition-colors" />
                       </div>
                     </div>
                   </div>
@@ -319,9 +321,9 @@ export function TraitPicker({ onStart }: TraitPickerProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
-            className="w-full max-w-lg text-center"
+            className="w-full max-w-md text-center"
           >
-            <div className="relative mb-8">
+            <div className="relative mb-6">
               {/* Animated rings */}
               <motion.div
                 className="absolute inset-0 rounded-full border-2 border-accent/20"
@@ -339,8 +341,8 @@ export function TraitPicker({ onStart }: TraitPickerProps) {
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
               />
               
-              <div className="relative w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
-                <Loader2 className="w-12 h-12 text-accent animate-spin" />
+              <div className="relative w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
+                <Loader2 className="w-10 h-10 text-accent animate-spin" />
               </div>
             </div>
 
@@ -348,20 +350,20 @@ export function TraitPicker({ onStart }: TraitPickerProps) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xl font-semibold text-text-primary mb-3"
+              className="text-lg font-semibold text-text-primary mb-2"
             >
-              The story weaver is at work...
+              Crafting your story...
             </motion.h3>
 
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-text-secondary mb-6"
+              className="text-text-secondary text-sm mb-4"
             >
-              Crafting a unique narrative to test your <span className="text-accent font-medium">{selectedPrimaryTrait ? traitLabels[selectedPrimaryTrait] : ""}</span>
+              Testing <span className="text-accent font-medium">{selectedPrimaryTrait ? traitLabels[selectedPrimaryTrait] : ""}</span>
               {selectedSecondaryTrait && (
-                <span> with <span className="text-accent font-medium">{traitLabels[selectedSecondaryTrait]}</span> as a secondary focus</span>
+                <span> with <span className="text-accent font-medium">{traitLabels[selectedSecondaryTrait]}</span></span>
               )}
             </motion.p>
 
@@ -370,23 +372,13 @@ export function TraitPicker({ onStart }: TraitPickerProps) {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-bg-secondary border border-accent/30 rounded-xl p-6"
+                  className="bg-bg-secondary border border-accent/30 rounded-xl p-4"
                 >
-                  <p className="text-text-muted text-sm mb-2">Your story awaits:</p>
-                  <h4 className="text-2xl font-bold text-accent">{generatedStory.title}</h4>
+                  <p className="text-text-muted text-xs mb-1">Your story:</p>
+                  <h4 className="text-xl font-bold text-accent">{generatedStory.title}</h4>
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Decorative text */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="mt-8 text-text-muted text-sm italic"
-            >
-              "Every choice reveals a piece of your character..."
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

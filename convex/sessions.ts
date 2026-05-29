@@ -163,3 +163,25 @@ export const _completeLegacy = internalMutation({
     await ctx.db.patch(args.sessionId, { status: "completed" });
   },
 });
+
+// Complete all active sessions for the current user
+export const completeAllActive = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const activeSessions = await ctx.db
+      .query("sessions")
+      .withIndex("by_user_and_status", (q) =>
+        q.eq("userId", identity.tokenIdentifier).eq("status", "active")
+      )
+      .collect();
+
+    for (const session of activeSessions) {
+      await ctx.db.patch(session._id, { status: "completed" });
+    }
+
+    return { completedCount: activeSessions.length };
+  },
+});

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 import { Chat } from "./components/Chat";
@@ -73,16 +73,17 @@ function App() {
 }
 
 function TroveApp() {
-  const activeSession = useQuery(api.sessions.getActiveSession);
+  const completeAllActive = useMutation(api.sessions.completeAllActive);
   const [manualSessionId, setManualSessionId] = useState<Id<"sessions"> | null>(
     null,
   );
   const [wantsNewStory, setWantsNewStory] = useState(false);
   const [showCharacterSheet, setShowCharacterSheet] = useState(false);
 
+  // Always start fresh - no auto-resume of previous sessions
   const sessionId = wantsNewStory
     ? null
-    : (manualSessionId ?? activeSession?.session._id ?? null);
+    : (manualSessionId ?? null);
 
   const handleStart = (id: Id<"sessions">) => {
     setWantsNewStory(false);
@@ -90,7 +91,9 @@ function TroveApp() {
     setShowCharacterSheet(false);
   };
 
-  const handleRestart = () => {
+  const handleRestart = async () => {
+    // Complete any active sessions when user goes back home
+    await completeAllActive();
     setWantsNewStory(true);
     setManualSessionId(null);
     setShowCharacterSheet(false);
