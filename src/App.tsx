@@ -5,7 +5,7 @@ import type { Id } from "../convex/_generated/dataModel";
 import { Chat } from "./components/Chat";
 import { CharacterSheet } from "./components/CharacterSheet";
 import { StoryPicker } from "./components/StoryPicker";
-import { ScrollText, ChevronUp } from "lucide-react";
+import { ScrollText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SignIn, useAuth, UserButton } from "@clerk/react";
 
@@ -21,7 +21,11 @@ function App() {
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-primary">
-        <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full" 
+        />
       </div>
     );
   }
@@ -30,14 +34,18 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-primary px-4">
         <div className="w-full max-w-sm">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-semibold text-text-primary mb-2">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
+          >
+            <h1 className="text-4xl font-bold text-text-primary mb-3">
               Trove
             </h1>
-            <p className="text-text-secondary text-sm">
-              Sign in to discover your character
+            <p className="text-text-secondary">
+              Discover your character through immersive stories
             </p>
-          </div>
+          </motion.div>
           <SignIn
             routing="hash"
             appearance={{
@@ -78,7 +86,7 @@ function TroveApp() {
     null,
   );
   const [wantsNewStory, setWantsNewStory] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [showCharacterSheet, setShowCharacterSheet] = useState(false);
 
   const sessionId = wantsNewStory
     ? null
@@ -87,85 +95,98 @@ function TroveApp() {
   const handleStart = (id: Id<"sessions">) => {
     setWantsNewStory(false);
     setManualSessionId(id);
+    setShowCharacterSheet(false);
   };
 
   const handleRestart = () => {
     setWantsNewStory(true);
     setManualSessionId(null);
-    setSheetOpen(false);
+    setShowCharacterSheet(false);
+  };
+
+  const handleComplete = () => {
+    setShowCharacterSheet(true);
   };
 
   return (
-    <div className="h-screen flex flex-col bg-bg-primary">
+    <div className="h-screen flex flex-col bg-bg-primary overflow-hidden">
       {/* Top bar */}
-      <div className="shrink-0 h-14 border-b border-border bg-bg-secondary flex items-center justify-between px-4">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="shrink-0 h-16 border-b border-border/50 bg-bg-secondary/80 backdrop-blur-md flex items-center justify-between px-4 z-20"
+      >
         <div className="flex items-center gap-3">
-          <span className="text-[18px] font-bold text-accent tracking-tight">
+          <motion.span 
+            className="text-[20px] font-bold text-accent tracking-tight"
+            whileHover={{ scale: 1.05 }}
+          >
             Trove
-          </span>
+          </motion.span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {sessionId && (
-            <button
-              onClick={() => setSheetOpen(true)}
-              className="lg:hidden w-9 h-9 rounded-lg bg-bg-tertiary border border-border flex items-center justify-center hover:bg-bg-elevated transition-colors"
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowCharacterSheet(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-tertiary border border-border hover:bg-bg-elevated hover:border-accent/40 transition-all"
             >
-              <ScrollText className="w-4 h-4 text-text-muted" />
-            </button>
+              <ScrollText className="w-4 h-4 text-accent" />
+              <span className="text-sm text-text-secondary hidden sm:inline">Profile</span>
+            </motion.button>
           )}
           <UserButton
             appearance={{
               elements: {
-                avatarBox: "w-8 h-8",
+                avatarBox: "w-9 h-9",
               },
             }}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 relative overflow-hidden">
         <AnimatePresence mode="wait">
           {!sessionId ? (
             <motion.div
               key="picker"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex-1 overflow-y-auto"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.3 }}
+              className="h-full overflow-y-auto"
             >
               <StoryPicker onStart={handleStart} />
             </motion.div>
           ) : (
             <motion.div
               key="chat"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex-1 flex overflow-hidden"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="h-full"
             >
-              <Chat sessionId={sessionId} className="flex-1" />
-              <CharacterSheet
-                sessionId={sessionId}
-                isOpen={sheetOpen}
-                onClose={() => setSheetOpen(false)}
-                onRestart={handleRestart}
+              <Chat 
+                sessionId={sessionId} 
+                className="h-full"
+                onComplete={handleComplete}
               />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Mobile sheet handle (visible when chat is active) */}
+      {/* Character Sheet Overlay - shown when requested or after completion */}
       {sessionId && (
-        <div className="lg:hidden fixed bottom-6 right-4 z-40">
-          <button
-            onClick={() => setSheetOpen(true)}
-            className="w-12 h-12 rounded-full bg-accent text-white shadow-lg flex items-center justify-center hover:bg-accent-light transition-colors"
-          >
-            <ChevronUp className="w-5 h-5" />
-          </button>
-        </div>
+        <CharacterSheet
+          sessionId={sessionId}
+          isOpen={showCharacterSheet}
+          onClose={() => setShowCharacterSheet(false)}
+          onRestart={handleRestart}
+        />
       )}
     </div>
   );
