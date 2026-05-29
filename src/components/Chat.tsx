@@ -7,7 +7,7 @@ import { MessageBubble } from "./MessageBubble";
 import { OptionButtons } from "./OptionButtons";
 import { TypingIndicator } from "./TypingIndicator";
 import { AmbientBackground } from "./AmbientBackground";
-import { Send, Sparkles, ChevronRight, Home, ListRestart } from "lucide-react";
+import { Send, Sparkles, ChevronRight, ListRestart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatProps {

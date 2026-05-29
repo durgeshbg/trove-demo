@@ -12,6 +12,7 @@ import type * as agent from "../agent.js";
 import type * as decisions from "../decisions.js";
 import type * as sessions from "../sessions.js";
 import type * as stories from "../stories.js";
+import type * as traitCategories from "../traitCategories.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   decisions: typeof decisions;
   sessions: typeof sessions;
   stories: typeof stories;
+  traitCategories: typeof traitCategories;
 }>;
 
 /**

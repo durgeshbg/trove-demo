@@ -5,6 +5,7 @@ import { v } from "convex/values";
 import { api, internal } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
 import { type Doc } from "./_generated/dataModel";
+import { traitDescriptions } from "./traitCategories";
 
 // Initialize Google GenAI client
 const ai = new GoogleGenAI({ apiKey: process.env.AI_API_KEY });
@@ -54,6 +55,10 @@ export const processDecision = action({
       session.turnCount ?? session.currentNodeIndex ?? 0;
     const isLastTurn: boolean = currentTurnCount >= maxTurns - 1;
 
+    // Handle legacy stories without primaryTrait
+    const primaryTrait = story.primaryTrait ?? "character";
+    const secondaryTraits = story.secondaryTraits ?? [];
+
     const traitsText: string = Object.entries(session.traits)
       .map(([k, v]) => `- ${k}: ${v}`)
       .join("\n");
@@ -69,18 +74,20 @@ export const processDecision = action({
     let result: DecisionResult;
 
     try {
-      const systemPrompt = `You are a narrative AI for Trove, a behavioral identity game. 
+      const systemPrompt = `You are a narrative AI for Trove, a behavioral identity game.
 
 STORY CONTEXT:
 Title: ${story.title}
-Vibe: ${story.vibe}
-Mood: ${story.mood}
+Primary Trait Being Tested: ${primaryTrait} - ${traitDescriptions[primaryTrait as keyof typeof traitDescriptions] || ""}
+${secondaryTraits.length > 0 ? `Secondary Traits: ${secondaryTraits.join(", ")}` : ""}
 Setting: ${story.context}
 
 Player's current traits (0-100):
 ${traitsText}
 
 Current turn: ${currentTurnCount + 1} of ${maxTurns}
+
+CRITICAL INSTRUCTION: This story is specifically designed to test the player's **${primaryTrait}**. Every scenario should present meaningful dilemmas where ${primaryTrait} is the key differentiator between choices.
 
 Always respond with valid JSON only. No markdown, no extra text.`;
 
@@ -92,14 +99,16 @@ The player just chose: "${args.input}"
 
 This is the FINAL decision point. Generate:
 1. A narrative conclusion (2-4 sentences, immersive second-person present tense) describing the consequence of their final choice
-2. A reflective ending message that summarizes their journey
+2. A reflective ending message that summarizes their journey and specifically acknowledges their demonstrated ${primaryTrait}
 3. Analyze their choice and update trait scores by -5 to +5 for: risk_tolerance, empathy, loyalty, creativity, decisiveness
+   - Focus on ${primaryTrait}: award +3 to +5 if their choice showed high ${primaryTrait}, -3 to -5 if it showed low ${primaryTrait}
+   - ${secondaryTraits.length > 0 ? `Also consider ${secondaryTraits.join(" and ")} in your scoring` : ""}
 4. Set isEnding to true
 
 Return JSON:
 {
   "message": "string (narrative conclusion)",
-  "endingMessage": "string (reflective ending)",
+  "endingMessage": "string (reflective ending that mentions their ${primaryTrait})",
   "trait_deltas": {
     "risk_tolerance": number,
     "empathy": number,
@@ -119,11 +128,13 @@ Generate the next narrative beat and decision point:
 1. Write 2-4 sentences (immersive second-person present tense) describing the immediate consequence of their choice and the new situation they face
 
 2. Generate 2-3 compelling decision options that:
-   - Fit the story's vibe (${story.vibe}) and mood (${story.mood})
-   - Reflect different approaches to the situation
-   - Would meaningfully test different personality traits
+   - Specifically test the player's ${primaryTrait}
+   - Represent different levels of ${primaryTrait} (e.g., one choice showing high ${primaryTrait}, one showing low, one moderate)
+   - Are meaningful and consequential, not superficial
 
 3. Analyze their choice and update trait scores by -5 to +5 for: risk_tolerance, empathy, loyalty, creativity, decisiveness
+   - Focus on ${primaryTrait}: award +3 to +5 if their choice showed high ${primaryTrait}, -3 to -5 if it showed low ${primaryTrait}
+   - ${secondaryTraits.length > 0 ? `Also consider ${secondaryTraits.join(" and ")} in your scoring` : ""}
 
 Return JSON:
 {
@@ -161,8 +172,8 @@ Return JSON:
       // Graceful fallback
       if (isLastTurn) {
         result = {
-          message: `The story reaches its conclusion. Your choices have shaped who you've become.`,
-          endingMessage: `Your journey through ${story.title} has revealed your true character. The traits you've demonstrated will stay with you.`,
+          message: `The story reaches its conclusion. Your choices have shaped who you've become, especially revealing your ${primaryTrait}.`,
+          endingMessage: `Your journey through ${story.title} has revealed your true character. Your ${primaryTrait} has been tested and measured.`,
           trait_deltas: {
             risk_tolerance: 0,
             empathy: 0,
@@ -174,11 +185,11 @@ Return JSON:
         };
       } else {
         result = {
-          message: `Your choice resonates through the narrative. The situation evolves before you, presenting new possibilities.`,
+          message: `Your choice resonates through the narrative. The situation evolves before you, presenting new possibilities that test your ${primaryTrait}.`,
           options: [
-            "Take the bold, risky path forward",
-            "Choose the careful, measured approach",
-            "Find an unexpected third way",
+            `Demonstrate high ${primaryTrait} in your approach`,
+            `Show restraint and lower ${primaryTrait}`,
+            "Find a balanced middle path",
           ],
           trait_deltas: {
             risk_tolerance: 0,
@@ -236,7 +247,7 @@ Return JSON:
     if (isLastTurn || result.isEnding) {
       const endingMsg =
         result.endingMessage ||
-        `Your journey through ${story.title} has reached its conclusion.`;
+        `Your journey through ${story.title} has reached its conclusion. Your ${primaryTrait} has been revealed.`;
       newMessages.push({
         role: "narrator" as const,
         text: endingMsg,
@@ -311,6 +322,10 @@ export const generateOpening = action({
 
     const maxTurns: number = story.maxTurns ?? 5;
 
+    // Handle legacy stories without primaryTrait
+    const primaryTrait = story.primaryTrait ?? "character";
+    const secondaryTraits = story.secondaryTraits ?? [];
+
     let result: {
       openingMessage: string;
       options: string[];
@@ -321,23 +336,34 @@ export const generateOpening = action({
 
 STORY CONTEXT:
 Title: ${story.title}
-Vibe: ${story.vibe}
-Mood: ${story.mood}
+Primary Trait Being Tested: ${primaryTrait} - ${traitDescriptions[primaryTrait as keyof typeof traitDescriptions] || ""}
+${secondaryTraits.length > 0 ? `Secondary Traits: ${secondaryTraits.join(", ")}` : ""}
 Setting: ${story.context}
 
-The player starts with all traits at 50 (neutral).
+Player starts with neutral traits (all at 50).
 This is turn 1 of ${maxTurns}.
+
+CRITICAL: This story is specifically designed to test ${primaryTrait}. The opening scenario must immediately establish a situation where ${primaryTrait} will be tested.
 
 Generate an immersive opening scenario and initial decision options.
 Always respond with valid JSON only.`;
 
       const userPrompt = `Generate the opening scenario for this story:
 
-Story Prompt: ${story.prompt}
+Story Prompt: ${story.prompt ?? story.context}
+
+This story tests the player's **${primaryTrait}**${secondaryTraits.length > 0 ? ` with **${secondaryTraits.join(" and ")}** as secondary focuses` : ""}.
 
 Create:
-1. An engaging opening message (3-5 sentences, immersive second-person present tense) that sets the scene and presents the initial situation
-2. 2-3 compelling decision options that represent different approaches to the situation
+1. An engaging opening message (3-5 sentences, immersive second-person present tense) that:
+   - Immediately immerses the player in the world
+   - Establishes the stakes and tension
+   - Presents a situation where their ${primaryTrait} will be immediately relevant
+
+2. 2-3 compelling decision options that:
+   - Represent different approaches to the initial situation
+   - Specifically test different levels of ${primaryTrait}
+   - Feel consequential and meaningful
 
 Return JSON:
 {
@@ -368,11 +394,11 @@ Return JSON:
       console.error("LLM call failed for opening, using fallback:", err);
 
       result = {
-        openingMessage: `You find yourself at the beginning of ${story.title}. The atmosphere is ${story.mood}. ${story.context}`,
+        openingMessage: `You find yourself at the threshold of ${story.title}. The atmosphere is charged with possibility. ${story.context} Your ${primaryTrait} will be your guide through what comes next.`,
         options: [
-          "Approach with caution and observe",
-          "Act boldly and take the initiative",
-          "Look for an unexpected angle",
+          `Approach with high ${primaryTrait}, embracing the challenge`,
+          `Exercise caution and restraint in your ${primaryTrait}`,
+          "Take a moment to assess before committing",
         ],
       };
     }

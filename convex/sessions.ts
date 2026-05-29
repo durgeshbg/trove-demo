@@ -1,5 +1,6 @@
 import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { type Id } from "./_generated/dataModel";
 
 const traitDeltasValidator = v.object({
   risk_tolerance: v.number(),
@@ -9,6 +10,7 @@ const traitDeltasValidator = v.object({
   decisiveness: v.number(),
 });
 
+// Legacy: Keep for compatibility but prefer startStoryFromTrait
 export const startSession = mutation({
   args: {
     storyId: v.id("stories"),
@@ -48,6 +50,50 @@ export const startSession = mutation({
     });
 
     return sessionId;
+  },
+});
+
+// Internal: Create a new session (used by startStoryFromTrait)
+export const _create = internalMutation({
+  args: {
+    userId: v.string(),
+    storyId: v.id("stories"),
+    traits: traitDeltasValidator,
+  },
+  handler: async (ctx, args): Promise<Id<"sessions">> => {
+    return await ctx.db.insert("sessions", {
+      userId: args.userId,
+      storyId: args.storyId,
+      turnCount: 0,
+      traits: args.traits,
+      status: "active",
+      messages: [],
+    });
+  },
+});
+
+// Internal: Get active session for a user
+export const _getActiveSessionRaw = query({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("sessions")
+      .withIndex("by_user_and_status", (q) =>
+        q.eq("userId", args.userId).eq("status", "active")
+      )
+      .first();
+  },
+});
+
+// Internal: Complete a session
+export const _complete = internalMutation({
+  args: {
+    sessionId: v.id("sessions"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.sessionId, { status: "completed" });
   },
 });
 
@@ -111,7 +157,7 @@ export const _update = internalMutation({
   },
 });
 
-export const _complete = internalMutation({
+export const _completeLegacy = internalMutation({
   args: { sessionId: v.id("sessions") },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.sessionId, { status: "completed" });

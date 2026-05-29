@@ -1,22 +1,16 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useState } from "react";
+import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 import { Chat } from "./components/Chat";
 import { CharacterSheet } from "./components/CharacterSheet";
-import { StoryPicker } from "./components/StoryPicker";
+import { TraitPicker } from "./components/TraitPicker";
 import { ScrollText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SignIn, useAuth, UserButton } from "@clerk/react";
 
 function App() {
   const { isSignedIn, isLoaded } = useAuth();
-  const seedStories = useMutation(api.stories.seedStories);
-
-  // Seed stories on first load
-  useEffect(() => {
-    seedStories().catch(() => {});
-  }, [seedStories]);
 
   if (!isLoaded) {
     return (
@@ -158,7 +152,7 @@ function TroveApp() {
               transition={{ duration: 0.3 }}
               className="h-full overflow-y-auto"
             >
-              <StoryPicker onStart={handleStart} />
+              <TraitPicker onStart={handleStart} />
             </motion.div>
           ) : (
             <motion.div
@@ -194,4 +188,3 @@ function TroveApp() {
 }
 
 export default App;
-

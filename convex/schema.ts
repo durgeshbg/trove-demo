@@ -9,6 +9,8 @@ export const traitNames = [
   "decisiveness",
 ] as const;
 
+export type TraitName = (typeof traitNames)[number];
+
 const traitDeltasValidator = v.object({
   risk_tolerance: v.number(),
   empathy: v.number(),
@@ -20,17 +22,23 @@ const traitDeltasValidator = v.object({
 export default defineSchema({
   stories: defineTable({
     title: v.string(),
-    vibe: v.string(),
-    mood: v.string(),
     context: v.string(),
-    // Dynamic prompt for LLM to generate scenarios (optional for legacy data)
+    // Dynamic prompt for LLM to generate scenarios (optional for legacy stories)
     prompt: v.optional(v.string()),
-    // Legacy fields for backward compatibility with old hardcoded stories
+    // The primary trait this story is designed to test (optional for legacy stories)
+    primaryTrait: v.optional(v.string()),
+    // Secondary traits that are also tested (optional)
+    secondaryTraits: v.optional(v.array(v.string())),
+    // Trait category for filtering/grouping (optional for legacy stories)
+    traitCategory: v.optional(v.string()),
+    // Optional: max number of decision points before ending
+    maxTurns: v.optional(v.number()),
+    // Legacy fields (deprecated but kept for migration compatibility)
+    vibe: v.optional(v.string()),
+    mood: v.optional(v.string()),
     openingMessage: v.optional(v.string()),
     endingMessage: v.optional(v.string()),
     nodes: v.optional(v.array(v.any())),
-    // Optional: max number of decision points before ending
-    maxTurns: v.optional(v.number()),
   }),
 
   sessions: defineTable({
